@@ -1,0 +1,19 @@
+name: spotify_env
+channels:
+  - mamba
+  - conda-forge
+  - anaconda-fusion
+  - defaults
+dependencies:
+  - python=3.11.17
+  - pip
+  # --- conda-installed packages (C-extensions, solvable) ---
+  - numpy
+  - plotly
+  - requests
+  - python-dotenv
+  # --- pip-only packages (PyPI only) ---
+  - pip:
+      - spotipy==2.24.0
+      - streamlit==1.37.0
+      - pandas==2.2.2

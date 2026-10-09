@@ -1,0 +1,35 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "default_agent": "build",
+  "permission": {
+    "edit": "ask",
+    "bash": "ask"
+  },
+  "agent": {
+    "observer": {
+      "mode": "subagent",
+      "description": "Polls Spotify for playlist and library changes, diffs snapshot_ids, writes track_events to SQLite, emits alert payloads. Read-only against Spotify.",
+      "permission": {
+        "edit": "ask",
+        "bash": "ask"
+      }
+    },
+    "maintainer": {
+      "mode": "subagent",
+      "description": "Audits dependencies and detects Spotify API schema drift. Proposes patches as diffs. Never applies them without explicit approval.",
+      "permission": {
+        "edit": "ask",
+        "bash": "ask"
+      }
+    },
+    "growth": {
+      "mode": "subagent",
+      "description": "Analyzes audio features to profile playlist vibe and drafts marketing copy. Draft-only. Writes no outbound content and mutates nothing.",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    }
+  }
+}

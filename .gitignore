@@ -1,0 +1,36 @@
+# --- Secrets ---
+.env
+.cache/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# --- Databases ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Agent output directories (regenerable, not source) ---
+alerts/outbox/*
+!alerts/outbox/.gitkeep
+marketing/drafts/*
+!marketing/drafts/.gitkeep
+review-reports/*.md
+
+# --- IDE ---
+.idea/
+.vscode/
+*.sublime-workspace
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- OS ---
+Thumbs.db
+.DS_Store
