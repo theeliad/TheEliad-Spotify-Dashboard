@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS playlist_tracks (
     added_at    TEXT,
     added_by    TEXT,
     position    INTEGER,
+    popularity  INTEGER,
     PRIMARY KEY (playlist_id, track_uri)
 );
 
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS audio_features_cache (
     danceability     REAL,
     valence          REAL,
     tempo            REAL,
+    duration_ms      INTEGER,
     key              INTEGER,
     mode             INTEGER,
     acousticness     REAL,
@@ -89,4 +91,34 @@ CREATE TABLE IF NOT EXISTS app_users (
     user_id      TEXT PRIMARY KEY,
     display_name TEXT,
     fetched_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Plays of the authenticated user recorded from recently-played, so the
+-- dashboard can rank the selected playlist by our own measured listens.
+-- Append-only; played_at is unique so repeated polls never double-count.
+CREATE TABLE IF NOT EXISTS play_events (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    track_uri    TEXT NOT NULL,
+    track_name   TEXT,
+    artists      TEXT,
+    played_at    TEXT NOT NULL,
+    captured_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_play_events_played_at ON play_events(played_at);
+CREATE INDEX IF NOT EXISTS idx_play_events_track ON play_events(track_uri);
+
+-- One immutable snapshot of playlist follower/owner metadata per observed
+-- snapshot_id, so follower count and owner are kept as history.
+CREATE TABLE IF NOT EXISTS playlist_meta_snapshots (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    playlist_id        TEXT NOT NULL REFERENCES playlists(playlist_id),
+    name               TEXT,
+    owner_id           TEXT,
+    owner_display_name TEXT,
+    follower_count     INTEGER NOT NULL DEFAULT 0,
+    collaborative      INTEGER NOT NULL DEFAULT 0,
+    snapshot_id        TEXT,
+    captured_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(playlist_id, snapshot_id)
 );

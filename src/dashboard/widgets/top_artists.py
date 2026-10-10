@@ -8,9 +8,9 @@ from src.db import load_artist_counts as artist_counts_db
 
 
 @st.cache_data(ttl=30)
-def load_artist_counts(limit: int = 15) -> pd.DataFrame:
-    """Read artist frequencies from SQLite."""
-    return artist_counts_db.load_artist_counts(limit)
+def load_artist_counts(playlist_id: str, limit: int = 15) -> pd.DataFrame:
+    """Read artist frequencies for one playlist from SQLite."""
+    return artist_counts_db.load_artist_counts(limit=limit, playlist_id=playlist_id)
 
 
 def render_top_artists(counts: pd.DataFrame) -> None:

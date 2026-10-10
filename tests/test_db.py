@@ -27,7 +27,15 @@ from src.schemas import Track, TrackEvent
 def test_init_creates_tables(db_conn) -> None:
     rows = db_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     names = {row[0] for row in rows}
-    assert {"playlists", "playlist_tracks", "track_events", "poll_runs", "app_users"} <= names
+    assert {
+        "playlists",
+        "playlist_tracks",
+        "track_events",
+        "poll_runs",
+        "app_users",
+        "play_events",
+        "playlist_meta_snapshots",
+    } <= names
 
 
 def test_write_playlist_inserts_then_updates(db_conn, sample_playlist) -> None:
@@ -145,6 +153,12 @@ def test_load_artist_counts(db_conn, sample_playlist, sample_tracks) -> None:
     assert len(counts) == 2
     assert int(counts["track_count"].sum()) == 2
 
+    scoped = load_artist_counts(playlist_id=sample_playlist.playlist_id)
+    assert len(scoped) == 2
+
+    out_of_scope = load_artist_counts(playlist_id="other-playlist")
+    assert out_of_scope.empty
+
 
 def test_load_overview_metrics(db_conn, sample_playlist, sample_tracks) -> None:
     write_playlist(db_conn, sample_playlist, "2024-01-01 00:00:00")
@@ -157,6 +171,11 @@ def test_load_overview_metrics(db_conn, sample_playlist, sample_tracks) -> None:
     assert metrics.track_count == 2
     assert metrics.events_24h == 1
     assert metrics.last_polled_at == "2024-01-01 00:00:00"
+
+    scoped = load_overview_metrics(sample_playlist.playlist_id)
+    assert scoped.playlist_count == 1
+    assert scoped.track_count == 2
+    assert scoped.events_24h == 1
 
 
 def test_load_playlist_track_rows(db_conn, sample_playlist, sample_tracks) -> None:

@@ -34,12 +34,21 @@ def db_connection(db_path: Path | None = None) -> Iterator[sqlite3.Connection]:
         conn.close()
 
 
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
+    """Add a column to an existing table when it is missing (schema evolution)."""
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
+
+
 def _init_db(db_path: Path) -> None:
     """Create tables from schema.sql if they do not yet exist."""
     conn = sqlite3.connect(str(db_path))
     try:
         schema = _SCHEMA_PATH.read_text(encoding="utf-8")
         conn.executescript(schema)
+        _ensure_column(conn, "audio_features_cache", "duration_ms", "INTEGER")
+        _ensure_column(conn, "playlist_tracks", "popularity", "INTEGER")
         conn.commit()
     finally:
         conn.close()

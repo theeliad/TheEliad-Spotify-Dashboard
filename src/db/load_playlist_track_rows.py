@@ -5,7 +5,7 @@ import sqlite3
 from src.schemas import Track
 
 _QUERY = (
-    "SELECT track_uri, track_name, artists, album_name, added_at, added_by, position "
+    "SELECT track_uri, track_name, artists, album_name, added_at, added_by, position, popularity "
     "FROM playlist_tracks WHERE playlist_id = ? ORDER BY position"
 )
 
@@ -22,6 +22,7 @@ def load_playlist_track_rows(conn: sqlite3.Connection, playlist_id: str) -> list
             added_at=row["added_at"],
             added_by=row["added_by"],
             position=row["position"] if row["position"] is not None else 0,
+            popularity=row["popularity"],
         )
         for row in rows
     ]

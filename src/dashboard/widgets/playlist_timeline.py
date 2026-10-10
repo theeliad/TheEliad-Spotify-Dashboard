@@ -16,6 +16,7 @@ def load_playlist_timeline(playlist_id: str) -> pd.DataFrame:
 def render_playlist_timeline(counts: pd.DataFrame) -> None:
     """Draw the selected playlist's adds/removals-per-day chart."""
     st.subheader("Playlist adds and removals per day")
+    st.caption("Adds by Spotify's added date; removals by the date they were detected.")
     if counts.empty:
         st.info("Not enough history to chart yet.")
         return

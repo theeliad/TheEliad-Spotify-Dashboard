@@ -55,6 +55,7 @@ class Track:
     added_at: str | None
     added_by: str | None
     position: int
+    popularity: int | None = None
 
     @classmethod
     def from_api(cls, item: Mapping[str, Any], position: int) -> Track | None:
@@ -63,6 +64,7 @@ class Track:
             return None
         album = track.get("album")
         added_by = item.get("added_by")
+        popularity = track.get("popularity")
         return cls(
             track_uri=_text(track.get("uri")),
             track_name=_text(track.get("name")),
@@ -71,6 +73,55 @@ class Track:
             added_at=item.get("added_at") if isinstance(item.get("added_at"), str) else None,
             added_by=added_by.get("id") if isinstance(added_by, Mapping) else None,
             position=position,
+            popularity=popularity if isinstance(popularity, int) else None,
+        )
+
+
+@dataclass(frozen=True)
+class AudioFeature:
+    """Cached tempo and duration for one track."""
+
+    track_uri: str
+    tempo: float | None
+    duration_ms: int | None
+
+
+@dataclass(frozen=True)
+class Preview:
+    """A 30-second audio preview resolved from a third-party provider."""
+
+    url: str
+    duration_ms: int | None
+
+
+@dataclass(frozen=True)
+class PlaylistMeta:
+    """Full playlist metadata used for follower and owner display."""
+
+    playlist_id: str
+    name: str
+    owner_id: str | None
+    owner_display_name: str | None
+    follower_count: int
+    collaborative: bool
+    snapshot_id: str
+
+    @classmethod
+    def from_api(cls, payload: Mapping[str, Any]) -> PlaylistMeta:
+        owner = payload.get("owner")
+        followers = payload.get("followers")
+        return cls(
+            playlist_id=_text(payload.get("id")),
+            name=_text(payload.get("name")),
+            owner_id=owner.get("id") if isinstance(owner, Mapping) else None,
+            owner_display_name=(
+                owner.get("display_name") if isinstance(owner, Mapping) else None
+            ),
+            follower_count=(
+                int(followers.get("total") or 0) if isinstance(followers, Mapping) else 0
+            ),
+            collaborative=bool(payload.get("collaborative")),
+            snapshot_id=_text(payload.get("snapshot_id")),
         )
 
 
@@ -160,6 +211,17 @@ class OverviewMetrics:
     playlist_count: int
     track_count: int
     events_24h: int
+    last_polled_at: str | None
+
+
+@dataclass(frozen=True)
+class PlaylistMetrics:
+    """KPI counts for a single tracked playlist."""
+
+    total_tracks: int
+    contributor_count: int
+    added_24h: int
+    removed_24h: int
     last_polled_at: str | None
 
 

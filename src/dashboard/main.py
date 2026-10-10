@@ -5,17 +5,24 @@ import streamlit as st
 
 from src.dashboard.connect import render_connect
 from src.dashboard.utils.format import spotify_playlist_url
-from src.dashboard.widgets.additions_chart import load_daily_change_counts, render_additions_chart
 from src.dashboard.widgets.overview_metrics import load_overview_metrics, render_overview_metrics
+from src.dashboard.widgets.playlist_bpm import load_playlist_tempo, render_playlist_bpm
 from src.dashboard.widgets.playlist_changes import load_playlist_changes, render_playlist_changes
 from src.dashboard.widgets.playlist_contributors import (
     load_playlist_contributors,
     render_playlist_contributors,
 )
 from src.dashboard.widgets.playlist_detail import load_playlist_tracks, render_playlist_detail
-from src.dashboard.widgets.playlist_table import load_playlists, render_playlist_table
-from src.dashboard.widgets.playlist_timeline import load_playlist_timeline, render_playlist_timeline
-from src.dashboard.widgets.poll_health import load_poll_runs, render_poll_health
+from src.dashboard.widgets.playlist_plays import load_playlist_plays, render_playlist_plays
+from src.dashboard.widgets.playlist_table import (
+    load_playlists,
+    load_selected_playlist,
+    render_playlist_table,
+)
+from src.dashboard.widgets.playlist_timeline import (
+    load_playlist_timeline,
+    render_playlist_timeline,
+)
 from src.dashboard.widgets.recent_changes import load_recent_changes, render_recent_changes
 from src.dashboard.widgets.top_artists import load_artist_counts, render_top_artists
 from src.observer.sync import run_sync
@@ -62,27 +69,48 @@ def _render_sidebar_links(playlists: pd.DataFrame) -> None:
         st.sidebar.link_button(name, spotify_playlist_url(playlist_id))
 
 
+def _render_playlist_selector(playlists: pd.DataFrame) -> str | None:
+    """Draw the single-playlist selector and return the chosen playlist id."""
+    st.sidebar.header("Selected playlist")
+    if playlists.empty:
+        st.sidebar.caption("No playlists recorded yet.")
+        return None
+    names_by_id = dict(zip(playlists["playlist_id"], playlists["name"], strict=True))
+    return st.sidebar.selectbox(
+        "Playlist",
+        options=list(names_by_id),
+        format_func=lambda playlist_id: names_by_id[playlist_id],
+        key="playlist_selector",
+    )
+
+
+def _render_selected_playlist(playlist_id: str) -> None:
+    """Draw every per-playlist widget for a single playlist."""
+    render_playlist_detail(load_playlist_tracks(playlist_id))
+    render_playlist_contributors(load_playlist_contributors(playlist_id))
+    render_playlist_changes(load_playlist_changes(playlist_id))
+    render_playlist_timeline(load_playlist_timeline(playlist_id))
+    render_playlist_bpm(load_playlist_tempo(playlist_id))
+
+
 def main() -> None:
     st.title("Spotify Playlist Dashboard")
 
     _render_sidebar_top()
     playlists = load_playlists()
-    playlist_ids = [] if playlists.empty else playlists["playlist_id"].tolist()
     _render_sidebar_links(playlists)
+    selected_playlist_id = _render_playlist_selector(playlists)
 
-    render_overview_metrics(load_overview_metrics())
-    render_recent_changes(load_recent_changes())
-    render_additions_chart(load_daily_change_counts())
-    st.caption("Click a row to load its stats. Links open the playlist in Spotify.")
-    selected_rows = render_playlist_table(playlists)
-    if selected_rows:
-        selected_playlist_id = playlist_ids[selected_rows[0]]
-        render_playlist_detail(load_playlist_tracks(selected_playlist_id))
-        render_playlist_contributors(load_playlist_contributors(selected_playlist_id))
-        render_playlist_changes(load_playlist_changes(selected_playlist_id))
-        render_playlist_timeline(load_playlist_timeline(selected_playlist_id))
-    render_top_artists(load_artist_counts())
-    render_poll_health(load_poll_runs())
+    if selected_playlist_id is None:
+        st.info("Select a playlist from the sidebar to view its stats.")
+        st.stop()
+
+    render_overview_metrics(load_overview_metrics(selected_playlist_id))
+    render_recent_changes(load_recent_changes(selected_playlist_id))
+    _render_selected_playlist(selected_playlist_id)
+    render_playlist_table(load_selected_playlist(selected_playlist_id))
+    render_top_artists(load_artist_counts(selected_playlist_id))
+    render_playlist_plays(load_playlist_plays(selected_playlist_id))
 
 
 main()

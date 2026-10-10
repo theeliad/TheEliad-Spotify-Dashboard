@@ -7,9 +7,9 @@ from src.schemas import OverviewMetrics
 
 
 @st.cache_data(ttl=30)
-def load_overview_metrics() -> OverviewMetrics:
-    """Read aggregate counts from SQLite."""
-    return overview_metrics_db.load_overview_metrics()
+def load_overview_metrics(playlist_id: str | None) -> OverviewMetrics:
+    """Read KPI counts for one playlist, or all when selection is missing."""
+    return overview_metrics_db.load_overview_metrics(playlist_id)
 
 
 def render_overview_metrics(metrics: OverviewMetrics) -> None:

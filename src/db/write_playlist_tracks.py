@@ -8,8 +8,8 @@ from src.schemas import Track
 _INSERT = """
 INSERT OR REPLACE INTO playlist_tracks (
     playlist_id, track_uri, track_name, artists, album_name,
-    added_at, added_by, position
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    added_at, added_by, position, popularity
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
 
 
@@ -30,6 +30,7 @@ def write_playlist_tracks(
                 track.added_at,
                 track.added_by,
                 track.position,
+                track.popularity,
             )
             for track in tracks
         ],
