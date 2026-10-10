@@ -14,9 +14,7 @@ ON CONFLICT(track_uri) DO UPDATE SET
 """
 
 
-def write_audio_features(
-    conn: sqlite3.Connection, features: Sequence[AudioFeature]
-) -> None:
+def write_audio_features(conn: sqlite3.Connection, features: Sequence[AudioFeature]) -> None:
     """Upsert tempo and duration rows for the given tracks."""
     conn.executemany(
         _UPSERT,

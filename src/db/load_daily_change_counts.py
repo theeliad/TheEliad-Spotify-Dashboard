@@ -17,8 +17,6 @@ def load_daily_change_counts(playlist_id: str | None = None) -> pd.DataFrame:
         return pd.DataFrame(columns=["day", "change_type", "count"])
     counted = events.copy()
     is_added = counted["change_type"] == "added"
-    counted["day"] = (
-        counted["added_at"].where(is_added).fillna(counted["detected_at"])
-    )
+    counted["day"] = counted["added_at"].where(is_added).fillna(counted["detected_at"])
     counted["day"] = pd.to_datetime(counted["day"]).dt.date
     return counted.groupby(["day", "change_type"]).size().reset_index(name="count")

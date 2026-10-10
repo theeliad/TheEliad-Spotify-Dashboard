@@ -23,12 +23,31 @@ from src.dashboard.widgets.playlist_timeline import (
     load_playlist_timeline,
     render_playlist_timeline,
 )
-from src.dashboard.widgets.recent_changes import load_recent_changes, render_recent_changes
 from src.dashboard.widgets.top_artists import load_artist_counts, render_top_artists
 from src.observer.sync import run_sync
 from src.settings import MissingCredentialsError, load_settings
 
-st.set_page_config(page_title="Spotify Playlist Dashboard", layout="wide")
+st.set_page_config(page_title="Spotify Playlist Dashboard", page_icon="🎧", layout="wide")
+
+_RESPONSIVE_CSS = """
+<style>
+@media (max-width: 1000px) {
+  [data-testid="stHorizontalBlock"] {
+    flex-wrap: wrap;
+  }
+  [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+</style>
+"""
+
+
+def _inject_responsive_layout() -> None:
+    """Stack column rows on narrow viewports so split-screen stays readable."""
+    st.html(_RESPONSIVE_CSS)
 
 
 def _run_sync() -> None:
@@ -84,16 +103,8 @@ def _render_playlist_selector(playlists: pd.DataFrame) -> str | None:
     )
 
 
-def _render_selected_playlist(playlist_id: str) -> None:
-    """Draw every per-playlist widget for a single playlist."""
-    render_playlist_detail(load_playlist_tracks(playlist_id))
-    render_playlist_contributors(load_playlist_contributors(playlist_id))
-    render_playlist_changes(load_playlist_changes(playlist_id))
-    render_playlist_timeline(load_playlist_timeline(playlist_id))
-    render_playlist_bpm(load_playlist_tempo(playlist_id))
-
-
 def main() -> None:
+    _inject_responsive_layout()
     st.title("Spotify Playlist Dashboard")
 
     _render_sidebar_top()
@@ -106,11 +117,30 @@ def main() -> None:
         st.stop()
 
     render_overview_metrics(load_overview_metrics(selected_playlist_id))
-    render_recent_changes(load_recent_changes(selected_playlist_id))
-    _render_selected_playlist(selected_playlist_id)
-    render_playlist_table(load_selected_playlist(selected_playlist_id))
-    render_top_artists(load_artist_counts(selected_playlist_id))
-    render_playlist_plays(load_playlist_plays(selected_playlist_id))
+
+    detail_column, summary_column = st.columns([2, 1], vertical_alignment="top")
+    with detail_column, st.container(border=True):
+        render_playlist_bpm(load_playlist_tempo(selected_playlist_id))
+    with summary_column, st.container(border=True):
+        render_playlist_table(load_selected_playlist(selected_playlist_id))
+
+    timeline_column, artists_column = st.columns(2, gap="large")
+    with timeline_column, st.container(border=True):
+        render_playlist_timeline(load_playlist_timeline(selected_playlist_id))
+    with artists_column, st.container(border=True):
+        render_top_artists(load_artist_counts(selected_playlist_id))
+
+    tracks_tab, changes_tab, contributors_tab, plays_tab = st.tabs(
+        ["Tracks", "Changes", "Contributors", "Most played"]
+    )
+    with tracks_tab:
+        render_playlist_detail(load_playlist_tracks(selected_playlist_id))
+    with changes_tab:
+        render_playlist_changes(load_playlist_changes(selected_playlist_id))
+    with contributors_tab:
+        render_playlist_contributors(load_playlist_contributors(selected_playlist_id))
+    with plays_tab:
+        render_playlist_plays(load_playlist_plays(selected_playlist_id))
 
 
 main()

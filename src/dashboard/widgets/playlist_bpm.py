@@ -36,9 +36,7 @@ def _bpm_figure(tempo: pd.DataFrame) -> Figure:
             fill="tozeroy",
             fillcolor="rgba(29, 185, 84, 0.25)",
             customdata=labels,
-            hovertemplate=(
-                "BPM %{y:.1f}<br>%{customdata[0]} — %{customdata[1]}<extra></extra>"
-            ),
+            hovertemplate=("BPM %{y:.1f}<br>%{customdata[0]} — %{customdata[1]}<extra></extra>"),
         )
     )
     figure.add_trace(
@@ -53,7 +51,7 @@ def _bpm_figure(tempo: pd.DataFrame) -> Figure:
             hoverinfo="skip",
         )
     )
-    figure.add_hline(y=0, line_dash="dot", line_color="rgba(0, 0, 0, 0.3)")
+    figure.add_hline(y=0, line_dash="dot", line_color="rgba(255, 255, 255, 0.25)")
     figure.update_layout(
         xaxis_title="Track position",
         yaxis_title="BPM",

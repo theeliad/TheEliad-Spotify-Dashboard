@@ -15,9 +15,7 @@ def load_overview_metrics(playlist_id: str | None = None) -> OverviewMetrics:
             events_24h = conn.execute(
                 "SELECT COUNT(*) FROM track_events WHERE detected_at >= datetime('now', '-1 day')"
             ).fetchone()[0]
-            last_polled_at = conn.execute(
-                "SELECT MAX(last_polled_at) FROM playlists"
-            ).fetchone()[0]
+            last_polled_at = conn.execute("SELECT MAX(last_polled_at) FROM playlists").fetchone()[0]
         else:
             playlist_count = 1
             track_count = conn.execute(

@@ -44,20 +44,21 @@ def load_selected_playlist(playlist_id: str) -> pd.DataFrame:
 
 
 def render_playlist_table(selected: pd.DataFrame) -> None:
-    """Draw the selected playlist's summary row (no row selection)."""
+    """Draw the selected playlist as a compact metric card."""
     st.subheader("Playlist")
     if selected.empty:
         st.info("Select a playlist to view its summary.")
         return
-    st.dataframe(
-        selected,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "likes": st.column_config.NumberColumn("Liked by"),
-            "created": "Created (approx.)",
-            "collaborative": "Collaborative",
-            "last_polled": "Last polled",
-            "url": st.column_config.LinkColumn("Spotify", display_text="Open"),
-        },
-    )
+    row = selected.iloc[0]
+    likes = int(row["likes"] or 0)
+    tracks = int(row["tracks"] or 0)
+    created = row["created"]
+    last_polled = row["last_polled"]
+    top = st.columns(2)
+    top[0].metric("Owner", row["owner"])
+    top[1].metric("Liked by", f"{likes:,}")
+    bottom = st.columns(2)
+    bottom[0].metric("Tracks", tracks)
+    bottom[1].metric("Collaborative", row["collaborative"])
+    st.caption(f"Created {created} · Last polled {last_polled}")
+    st.link_button("Open in Spotify", row["url"])

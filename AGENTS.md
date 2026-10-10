@@ -48,6 +48,12 @@ Python 3.11.17, conda env `spotify_env`.
 - Catch specific exceptions. No bare `except:`.
 - Never silently swallow errors.
 
+### Caching discipline
+- Every function that reads from SQLite **must** use `@st.cache_data` — never `@st.cache_resource`.
+- Every function that reads from Spotify API **must** use `@st.cache_data` with `ttl=300` (5 minutes).
+- Never use `@st.cache_resource` — it bypasses the human gate.
+- If a function reads from both SQLite and Spotify, it must use `@st.cache_data` and include `ttl=300` to prevent stale data.
+
 ### Naming
 - Variables: descriptive nouns. `user_playlist_ids` not `x`.
 - Functions: verb + object. `fetch_playlist_tracks`.

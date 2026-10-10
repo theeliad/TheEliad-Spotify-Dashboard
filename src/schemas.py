@@ -114,9 +114,7 @@ class PlaylistMeta:
             playlist_id=_text(payload.get("id")),
             name=_text(payload.get("name")),
             owner_id=owner.get("id") if isinstance(owner, Mapping) else None,
-            owner_display_name=(
-                owner.get("display_name") if isinstance(owner, Mapping) else None
-            ),
+            owner_display_name=(owner.get("display_name") if isinstance(owner, Mapping) else None),
             follower_count=(
                 int(followers.get("total") or 0) if isinstance(followers, Mapping) else 0
             ),

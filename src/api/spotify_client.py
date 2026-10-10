@@ -33,9 +33,7 @@ def get_authorize_url(settings: Settings) -> str:
 
 def exchange_code_for_token(settings: Settings, code: str) -> None:
     """Exchange an OAuth authorization code for a cached access token."""
-    build_oauth_manager(settings, open_browser=False).get_access_token(
-        code=code, as_dict=False
-    )
+    build_oauth_manager(settings, open_browser=False).get_access_token(code=code, as_dict=False)
 
 
 def has_cached_token(settings: Settings) -> bool:

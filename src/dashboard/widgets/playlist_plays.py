@@ -13,9 +13,7 @@ def load_playlist_plays(playlist_id: str) -> pd.DataFrame:
 
 
 def _render_played_ranked(counts: pd.DataFrame) -> None:
-    played = counts[counts["play_count"] > 0].sort_values(
-        "play_count", ascending=False
-    )
+    played = counts[counts["play_count"] > 0].sort_values("play_count", ascending=False)
     if played.empty:
         st.info("No play activity recorded for this playlist yet. Sync to start tracking.")
         return
@@ -31,9 +29,7 @@ def _render_played_ranked(counts: pd.DataFrame) -> None:
 
 
 def _render_popularity_ranked(counts: pd.DataFrame) -> None:
-    ranked = counts[counts["popularity"].notna()].sort_values(
-        "popularity", ascending=False
-    )
+    ranked = counts[counts["popularity"].notna()].sort_values("popularity", ascending=False)
     if ranked.empty:
         st.caption("No popularity data for this playlist yet.")
         return
